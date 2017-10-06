@@ -1,0 +1,100 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta http-equiv="Content-Security-Policy" content="default-src * data: gap: content: https://ssl.gstatic.com; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval'">
+    <script src="components/loader.js"></script>
+    <link rel="stylesheet" href="components/loader.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script>
+        $(function () {
+    	    //ボタンのクリックイベント
+		    $("input").on("click", function () {   
+			    var ken = $(this).attr("xml_file");
+			    com(ken);
+		    })
+	    });
+        
+    	function com(ken) {
+    		//alert(ken);
+    		//ajax通信を行う
+    		$.ajax({
+    			url: 'http://javascriptajax.azurewebsites.net/get_tenki_json.php?city=' + ken,
+    			type: 'GET',
+    			datatype: 'json',
+    		}).done(function (data) {
+    			//ajaxの通信に成功した場合
+    			//受信データは引数dataで受け取る
+    			var json_data = $.parseJSON(data);
+    			console.log(json_data);
+    
+    			//console.log(json_data.description.text);
+    
+    			$("#forecast").html("");
+    			$("#weather").html("");
+    			$("#url").html("");
+    
+    			//天気の概況文
+    			$("#forecast").append(json_data.description.text);
+    
+    			//連想配列の長さを得る Object.keysメソッド
+    			//console.log(Object.keys(json_data.forecasts).length);
+    			var json_obj_length = Object.keys(json_data.forecasts).length;
+    
+    			//3日分のデータを表示する
+    			var html = "";
+    			html += '<tr>';
+    
+    			for (var i = 0; i < json_obj_length; i++) {
+    				html += '<td>' + json_data.forecasts[i].dateLabel + '</td>';
+    			}
+    
+    			html += '</tr><tr>';
+    
+    			for (var i = 0; i < json_obj_length; i++) {
+    				html += '<td><img src=' + json_data.forecasts[i].image.url + '></td>';
+    			}
+    
+    			html += '</tr><tr>';
+    
+    			for (var i = 0; i < json_obj_length; i++) {
+    				html += '<td>' + json_data.forecasts[i].image.title + '</td>';
+    			}
+    
+    			html += '</tr>';
+    
+    			$("#weather").append(html);
+    			//
+    			var json_obj_length = Object.keys(json_data.pinpointLocations).length;
+    
+    			var html = "";
+    
+    			for (var i = 0; i < json_obj_length; i++) {
+    				html += '<tr>';
+    				html += '<td><a href=' + json_data.pinpointLocations[i].link + ' target="_blank">' + json_data.pinpointLocations[i].name + '</a></td>';
+    				html += '</tr>';
+    			}
+    			$("#url").append(html);
+    
+    		}).fail(function (data) {
+    			//ajaxの通信に失敗した場合
+    			alert("受信失敗");
+    		});
+    	};
+    </script>
+</head>
+<body>
+    <h1>天気予報</h1>
+
+    <input type="button" value="愛媛県" xml_file="380010">
+	<input type="button" value="香川県" xml_file="370000"><br>
+	<input type="button" value="徳島県" xml_file="360010">
+	<input type="button" value="高知県" xml_file="390010"><br>
+
+	<p>ここに天気予報を表示します</p>
+	<p id="forecast"></p>
+	<table id="weather"></table>
+	<table id="url"></table>
+</body>
+</html>
